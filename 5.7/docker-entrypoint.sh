@@ -32,6 +32,19 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 if [ "$1" = 'mysqld' ]; then
+
+	# Configure binlog to MySQL Server
+	if [ -n "$MYSQL_BINLOG" ] || [ -n "" ]; then
+		# Don't touch bind-mounted config files
+		if ! cat /proc/1/mounts | grep "etc/my.cnf"; then
+			echo '[Entrypoint] Configure binlog on my.cnf'
+			chmod o+w /var/log
+			echo "log-bin = /var/log/mysql.bin" >> /etc/my.cnf
+			echo "server_id = 1" >> /etc/my.cnf
+			echo "binlog-format = row" >> /etc/my.cnf
+		fi
+	fi
+
 	# Test that the server can start. We redirect stdout to /dev/null so
 	# only the error messages are left.
 	result=0
